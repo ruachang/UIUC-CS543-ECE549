@@ -1,22 +1,30 @@
+import sys
+sys.path.append('MP1')
 import os
 import imageio
 import numpy as np
 from absl import flags, app
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('test_name_simple', 'simple_almastatue', 
+flags.DEFINE_string('test_name_simple', 'simple_person', 
                     'what set of shreads to load')
 
 def load_imgs(name):
-    file_names = os.listdir(os.path.join('shredded-images', name))
+    file_names = os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shredded-images', name))
     file_names.sort()
     Is = []
     for f in file_names:
-        I = imageio.v2.imread(os.path.join('shredded-images', name, f))
+        I = imageio.v2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shredded-images', name, f))
         Is.append(I)
     return Is
 
-
+def pixel_norm(image_right, image_left):
+    height, width, channel = image_left.shape
+    # Use longer bits to initialize 
+    dis = np.int64(0)
+    # Use the L2 norm between two schalors 
+    dis = np.sum((image_right[:, 0, :] - image_left[:, width-1, :]) ** 2)
+    return dis 
 def pairwise_distance(Is):
     '''
     :param Is: list of N images
@@ -27,7 +35,11 @@ def pairwise_distance(Is):
     distance when strip j is just to the left of strip i. 
     '''
     dist = np.ones((len(Is), len(Is)))
-    # write your code here
+    # Calculate the pairwise distance between two shred images 
+    for i in range(len(Is)):
+        for j in range(len(Is)):
+            dist[i][j] = pixel_norm(Is[i], Is[j])
+    
     return dist
 
 

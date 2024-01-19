@@ -1,22 +1,60 @@
+import sys
+sys.path.append('..')
 import os
 import imageio
 import numpy as np
 from absl import flags, app
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('test_name_hard', 'hard_almastatue', 
+flags.DEFINE_string('test_name_hard', 'hard_altgeld', 
                     'what set of shreads to load')
 
 
 def load_imgs(name):
-    file_names = os.listdir(os.path.join('shredded-images', name))
+    file_names = os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shredded-images', name))
     file_names.sort()
     Is = []
     for f in file_names:
-        I = imageio.v2.imread(os.path.join('shredded-images', name, f))
+        I = imageio.v2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shredded-images', name, f))
         Is.append(I)
     return Is
 
+def pixel_norm(image_right, image_left):
+# Assume that the slide range is depend on the 20% of the right image
+    height_l, width, channel = image_left.shape
+    height_r, _, _ = image_right.shape
+    max_slide_height = int(height_r * 0.2)
+    min_dis = float('inf') 
+    min_slide = 0
+    for slide_height in range(-max_slide_height, max_slide_height):
+        overlap_bottom = min(height_r, height_l + slide_height)  
+        overlap_top = max(0, slide_height)
+        dis = np.int64(0)
+        # calculate the start and end point of the finish height
+        overlap_right = np.float64((image_right[overlap_top : overlap_bottom, 0, :]))
+        overlap_left = np.float64((image_left[-min(0, slide_height) : -min(0, slide_height) + overlap_bottom - overlap_top, width-1, :]))
+        dis = np.sum((overlap_right - overlap_left) ** 2)
+    
+        if dis < min_dis:
+            min_dis = dis
+            min_slide = slide_height
+    return min_dis, min_slide
+def pairwise_distance(Is):
+    '''
+    :param Is: list of N images
+    :return dist: pairwise distance matrix of N x N
+    
+    Given a N image stripes in Is, returns a N x N matrix dist which stores the
+    distance between pairs of shreds. Specifically, dist[i,j] contains the
+    distance when strip j is just to the left of strip i. 
+    '''
+    dist = np.ones((len(Is), len(Is)))
+    slide_dist = np.ones((len(Is), len(Is)))
+    # Calculate the pairwise distance between two shred images 
+    for i in range(len(Is)):
+        for j in range(len(Is)):
+            dist[i][j], slide_dist[i][j] = pixel_norm(Is[i], Is[j])
+    return dist, slide_dist
 
 def solve(Is):
     '''
@@ -30,7 +68,47 @@ def solve(Is):
     # hard_campus, you need to write code that works in general for any given
     # Is. Use the solution for hard_campus to understand the format for
     # what you need to return
-    return order, offsets
+    dist, slide_dist = pairwise_distance(Is)
+
+    inds = np.arange(len(Is))
+    # run greedy matching
+    order = [0]
+    offsets_tmp = []
+    # Still use the given greedy algorithm 
+    # First only store all of the distance from the right shred
+    for i in range(len(Is) - 1):
+        d1 = np.min(dist[0, 1:])
+        d2 = np.min(dist[1:, 0])
+        if d1 < d2:
+        # the found shred is on the left of the current one
+            ind = np.argmin(dist[0, 1:]) + 1
+            order.insert(0, inds[ind])
+            offsets_tmp.insert(0, slide_dist[0, ind])
+            dist[0, :] = dist[ind, :]
+            slide_dist[0, :] = slide_dist[ind, :]
+            dist = np.delete(dist, ind, 0)
+            dist = np.delete(dist, ind, 1)
+            slide_dist = np.delete(slide_dist, ind, 0)
+            slide_dist = np.delete(slide_dist, ind, 1)
+            inds = np.delete(inds, ind, 0)
+        else:
+        # the found shred is on the right of the current one
+            ind = np.argmin(dist[1:, 0]) + 1
+            order.append(inds[ind])
+            offsets_tmp.append(slide_dist[ind, 0])
+            dist[:, 0] = dist[:, ind]
+            slide_dist[:, 0] = slide_dist[:, ind]
+            dist = np.delete(dist, ind, 0)
+            dist = np.delete(dist, ind, 1)
+            slide_dist = np.delete(slide_dist, ind, 0)
+            slide_dist = np.delete(slide_dist, ind, 1)
+            inds = np.delete(inds, ind, 0)
+    offset = [0]
+    # Calculate the offset from the canvas
+    for i in offsets_tmp:
+        offset.append(offset[-1] + i)
+    offset = [int(-(i - max(offset))) for i in offset]
+    return order, np.array(offset)
 
 
 def composite(Is, order, offsets):
