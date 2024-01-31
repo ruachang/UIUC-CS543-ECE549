@@ -100,9 +100,9 @@
             \frac1{\sqrt{2}} & -\frac1{\sqrt{2}}  \\
                 \frac1{\sqrt 2}  & \frac1{\sqrt 2} 
             \end{bmatrix}`$ Compute
-        $`V^T \begin{bmatrix} 1 \\ 0 \end{bmatrix}`$ and  
-        $`V^T \begin{bmatrix} 0 \\ 1 \end{bmatrix}`$. What does matrix
-        multiplication $`V^Tx`$ do to $`x`$?
+        $`V \begin{bmatrix} 1 \\ 0 \end{bmatrix}`$ and  
+        $`V \begin{bmatrix} 0 \\ 1 \end{bmatrix}`$. What does matrix
+        multiplication $`Vx`$ do to $`x`$?
 
     2.  **Matrix Transpose [2 pts].**  Verify that $`V^{-1} = V^\top`$ What does
         $`V^\top x`$ do to $`x`$?
