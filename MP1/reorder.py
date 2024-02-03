@@ -6,7 +6,7 @@ import numpy as np
 from absl import flags, app
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('test_name_simple', 'simple_person', 
+flags.DEFINE_string('test_name_simple', 'simple_almastatue', 
                     'what set of shreads to load')
 
 def load_imgs(name):

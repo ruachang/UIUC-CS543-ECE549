@@ -5,6 +5,18 @@ import matplotlib.pyplot as plt
 # specular exponent
 k_e = 50
 
+# Change pixel (x, y) to world cooridiante (X, Y, Z)
+def pixel_world(x, y, Z, cx, cy, f):
+  X = (x - cx) * Z / f
+  Y = (y - cy) * Z / f
+  return X, Y
+
+# Generate unit direction vector from pixel(a, b, c) to (x, y, z)
+def direct_vector(x1, x2):
+  vec = np.array([x2[0] - x1[0], x2[1] - x1[1], x2[2] - x1[2]])
+  unit_vec = vec / np.linalg.norm(vec)
+  return unit_vec
+
 def render(Z, N, A, S, 
            point_light_loc, point_light_strength, 
            directional_light_dirn, directional_light_strength,
@@ -15,18 +27,47 @@ def render(Z, N, A, S,
   # These parameters along with the depth image will be useful for you to
   # estimate the 3D points on the surface of the sphere for computing the
   # angles between the different directions.
+  # Z: per-pixel depth N: normal A: k_a(k_d=k_a) S: k_s
   h, w = A.shape
   cx, cy = w / 2, h /2
   f = 128.
 
-
+  # Flag for the type of ligh source
+  if point_light_strength[0] == 0:
+    POINT_LIGHT_FLAG = False
+  else:
+    POINT_LIGHT_FLAG = True
   # Ambient Term
   I = A * ambient_light
-  
-  # Diffuse Term
-
-  # Specular Term
-
+  for x in range(h):
+    for y in range(w):
+      # calculate the world coordinates of the pixel
+      X, Y = pixel_world(x, y, Z[x, y], cx, cy, f)
+      diffuse_intense = 0.0
+      specular_intense = 0.0      
+      if POINT_LIGHT_FLAG:
+      # point light: every pixel vi is different, si is different, it equals to light pos - pixel
+      # Diffuse Term
+        vi = direct_vector([X, Y, Z[x, y]], point_light_loc[0])
+        diffuse_intense = A[x, y] * point_light_strength[0] * max(0, np.dot(vi, N[x, y] / np.linalg.norm(N[x, y])))
+      # Specular Term
+        vr = direct_vector([0, 0, 0], [X, Y, Z[x, y]])
+        si = vi - 2 * np.dot(vi, N[x, y]) * N[x, y]
+        si = si / np.linalg.norm(si)
+        specular_intense = S[x, y] * point_light_strength[0] * (max(0, np.dot(si, vr)) ** k_e)
+      else: 
+      # directional light: every pixel vi is the same, all are the give vector. si is still different; but need to iterate 
+      # through all given direnctional light sources 
+        vr = direct_vector([0, 0, 0], [X, Y, Z[x, y]])
+        for i in range(len(directional_light_dirn)):
+      # Diffuse Term
+          vi = directional_light_dirn[i] / np.linalg.norm(directional_light_dirn[i])
+          diffuse_intense += A[x, y] * directional_light_strength[i] * max(0, np.dot(vi, N[x, y] / np.linalg.norm(N[x, y])))
+      # Specular Term
+          si = vi - 2 * np.dot(vi, N[x, y]) * N[x, y]
+          si = si / np.linalg.norm(si)
+          specular_intense += S[x, y] * directional_light_strength[i] * (max(0, np.dot(si, vr)) ** k_e)
+      I[x,y] += diffuse_intense + specular_intense
   I = np.minimum(I, 1)*255
   I = I.astype(np.uint8)
   I = np.repeat(I[:,:,np.newaxis], 3, axis=2)

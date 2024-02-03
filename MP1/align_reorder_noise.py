@@ -4,9 +4,10 @@ import os
 import imageio
 import numpy as np
 from absl import flags, app
-
+import copy
 FLAGS = flags.FLAGS
-flags.DEFINE_string('test_name_hard', 'hard_altgeld', 
+import cv2 
+flags.DEFINE_string('test_name_noise', 'scan_almastatue', 
                     'what set of shreads to load')
 
 
@@ -19,8 +20,33 @@ def load_imgs(name):
         Is.append(I)
     return Is
 
+def normalize(x):
+    mean = np.mean(x)
+    norm = np.linalg.norm(x - mean) 
+    return (x - mean) / norm
+
+def midvalue_filter(kernel_size, image):
+    image_filter = copy.deepcopy(image)
+    # image_filter = cv2.copyMakeBorder(image_filter, 1, 1, 1, 1, cv2.BORDER_REPLICATE)
+    height, width, channel = image.shape
+    for c in range(channel):
+        for i in range(height):
+            for j in range(width):
+                if i == 0 or i == height - 1 or j == 0 or j == width - 1:
+                    continue
+                else:
+                    # sliced_image = image[i - 1 : i + 2, j - 1 : j + 2, c]
+                    image_filter[i, j, c] = np.mean(image[i - 1 : i + 2, j - 1 : j + 2, c])
+    return image_filter
 def pixel_norm(image_right, image_left):
 # Assume that the slide range is depend on the 20% of the right image
+    image_right = normalize(image_right)
+    # image_right_cut = midvalue_filter(3, image_right[:, 0 : 2, :])
+    image_right_cut = image_right[:, 0 : 2, :]
+    
+    image_left = normalize(image_left)
+    # image_left_cut = midvalue_filter(3, image_left[:, -3 : -1, :])
+    image_left_cut = image_left[:, -3 : -1, :]
     height_l, width, channel = image_left.shape
     height_r, _, _ = image_right.shape
     max_slide_height = int(height_r * 0.2)
@@ -29,12 +55,15 @@ def pixel_norm(image_right, image_left):
     for slide_height in range(-max_slide_height, max_slide_height):
         overlap_bottom = min(height_r, height_l + slide_height)  
         overlap_top = max(0, slide_height)
-        dis = np.int64(0)
+        dis = np.float64(0)
         # calculate the start and end point of the finish height
-        overlap_right = np.float64((image_right[overlap_top : overlap_bottom, 0, :]))
-        overlap_left = np.float64((image_left[-min(0, slide_height) : -min(0, slide_height) + overlap_bottom - overlap_top, width-1, :]))
-        dis = np.sum((overlap_right - overlap_left) ** 2) / (overlap_bottom - overlap_top)
-    
+        overlap_right = np.float64((image_right_cut[overlap_top : overlap_bottom, :, :]))
+        overlap_left = np.float64((image_left_cut[-min(0, slide_height) : -min(0, slide_height) + overlap_bottom - overlap_top, :, :]))
+        # overlap_left = midvalue_filter(3, overlap_left)
+        # overlap_right = normalize(overlap_right)
+        # overlap_right = midvalue _filter(3, overlap_right)
+        # dis = np.sum((overlap_right - overlap_left) ** 2)
+        dis = -np.dot(overlap_right.flatten(), overlap_left.flatten())
         if dis < min_dis:
             min_dis = dis
             min_slide = slide_height
@@ -126,9 +155,8 @@ def composite(Is, order, offsets):
     return I_out
 
 def main(_):
-    Is = load_imgs(FLAGS.test_name_hard)
+    Is = load_imgs(FLAGS.test_name_noise)
     order, offsets = solve(Is)
-    print("order:", order, "offsets:", offsets)
     I = composite(Is, order, offsets)
     import matplotlib.pyplot as plt
     plt.imshow(I)
