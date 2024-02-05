@@ -1,4 +1,4 @@
-## ECE549 / CS543 Computer Vision, Spring 2023, Assignment 1
+## ECE549 / CS543 Computer Vision, Spring 2024, Assignment 2
 
 ### Instructions
 
