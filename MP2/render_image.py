@@ -1,5 +1,6 @@
 import numpy as np
 from generate_scene import get_ball
+# from generate_scene_bunny import get_bunny
 import matplotlib.pyplot as plt
 
 # specular exponent
@@ -11,11 +12,15 @@ def pixel_world(x, y, Z, cx, cy, f):
   Y = (y - cy) * Z / f
   return X, Y
 
-# Generate unit direction vector from pixel(a, b, c) to (x, y, z)
-def direct_vector(x1, x2):
-  vec = np.array([x2[0] - x1[0], x2[1] - x1[1], x2[2] - x1[2]])
-  unit_vec = vec / np.linalg.norm(vec)
+# Generate unit direction vector in 3D matrix(unit vector of every pixel)
+def direct_mat(x1, x2):
+  vec = x2 - x1
+  unit_vec = vec / np.linalg.norm(vec, axis=2).reshape(vec.shape[0], vec.shape[1], 1)
   return unit_vec
+
+def mat_cos(x1, x2):
+  point_wise_2 = np.sum(x1 * x2, axis=2)
+  return point_wise_2
 
 def render(Z, N, A, S, 
            point_light_loc, point_light_strength, 
@@ -39,35 +44,39 @@ def render(Z, N, A, S,
     POINT_LIGHT_FLAG = True
   # Ambient Term
   I = A * ambient_light
-  for x in range(h):
-    for y in range(w):
+  real_world_coordinate = np.zeros((h, w, 3))
+  for x in range(w):
+    for y in range(h):
       # calculate the world coordinates of the pixel
-      X, Y = pixel_world(x, y, Z[x, y], cx, cy, f)
-      diffuse_intense = 0.0
-      specular_intense = 0.0      
-      if POINT_LIGHT_FLAG:
-      # point light: every pixel vi is different, si is different, it equals to light pos - pixel
-      # Diffuse Term
-        vi = direct_vector([X, Y, Z[x, y]], point_light_loc[0])
-        diffuse_intense = A[x, y] * point_light_strength[0] * max(0, np.dot(vi, N[x, y] / np.linalg.norm(N[x, y])))
-      # Specular Term
-        vr = direct_vector([0, 0, 0], [X, Y, Z[x, y]])
-        si = vi - 2 * np.dot(vi, N[x, y]) * N[x, y]
-        si = si / np.linalg.norm(si)
-        specular_intense = S[x, y] * point_light_strength[0] * (max(0, np.dot(si, vr)) ** k_e)
-      else: 
-      # directional light: every pixel vi is the same, all are the give vector. si is still different; but need to iterate 
-      # through all given direnctional light sources 
-        vr = direct_vector([0, 0, 0], [X, Y, Z[x, y]])
-        for i in range(len(directional_light_dirn)):
-      # Diffuse Term
-          vi = directional_light_dirn[i] / np.linalg.norm(directional_light_dirn[i])
-          diffuse_intense += A[x, y] * directional_light_strength[i] * max(0, np.dot(vi, N[x, y] / np.linalg.norm(N[x, y])))
-      # Specular Term
-          si = vi - 2 * np.dot(vi, N[x, y]) * N[x, y]
-          si = si / np.linalg.norm(si)
-          specular_intense += S[x, y] * directional_light_strength[i] * (max(0, np.dot(si, vr)) ** k_e)
-      I[x,y] += diffuse_intense + specular_intense
+      X, Y = pixel_world(x, y, Z[y, x], cx, cy, f)
+      real_world_coordinate[y, x] = [X, Y, Z[y, x]]
+  N = N / np.linalg.norm(N, axis=2).reshape(h, w, 1)
+  diffuse_intense = np.zeros((h, w))
+  specular_intense = np.zeros((h, w))
+  if POINT_LIGHT_FLAG:
+  # point light: every pixel vi is different, si is different, it equals to light pos - pixel
+  # Diffuse Term
+    vi = direct_mat(real_world_coordinate, point_light_loc[0])
+    diffuse_intense = A * point_light_strength[0] * np.maximum(mat_cos(vi, N), 0)
+  # Specular Term
+    vr = direct_mat(real_world_coordinate, [0, 0, 0])
+    si = -vi - 2 * (np.sum(-vi * N, axis=2)).reshape((h, w, 1)) * N
+    si = si / np.linalg.norm(si, axis=2).reshape(h, w, 1)
+    specular_intense = S * point_light_strength[0] * (np.maximum(mat_cos(vr, si), 0) ** k_e)
+  else: 
+  # directional light: every pixel vi is the same, all are the give vector. si is still different; but need to iterate 
+  # through all given direnctional light sources 
+    vr = direct_mat(real_world_coordinate, [0, 0, 0])
+    for i in range(len(directional_light_dirn)):
+  # Diffuse Term
+      vi = directional_light_dirn[i] / np.linalg.norm(directional_light_dirn[i])
+      diffuse_intense += A * directional_light_strength[i] * np.maximum(mat_cos(vi, N), 0)
+  # Specular Term
+      si = -vi - 2 * (np.sum(-vi * N, axis=2)).reshape((h, w, 1)) * N
+      si = si / np.linalg.norm(si, axis=2).reshape(h, w, 1)
+      specular_intense += S * directional_light_strength[i] * (np.maximum(mat_cos(vr, si), 0) ** k_e)
+  I += diffuse_intense + specular_intense
+      
   I = np.minimum(I, 1)*255
   I = I.astype(np.uint8)
   I = np.repeat(I[:,:,np.newaxis], 3, axis=2)
