@@ -16,11 +16,11 @@
        - Code and output files should be submitted to [Gradescope](https://www.gradescope.com) under `MP5-code` with the following structure:
          ```
          # Q1 code
-         CS543_MP5_part1_starter_code.py
+         CS543_MP4_part1_starter_code.py
          # Q1 results
          Q1_label_predictions.npy (we provide code to generate these using your models, see below)
          # Q2 code
-         CS543_MP5_part2_starter_code.py
+         CS543_MP4_part2_starter_code.py
          # Q2 results 
          Q2_sseg_predictions.npy (we provide code to generate these using your models, see below)
          ```
@@ -33,7 +33,9 @@
          for seeing how well you are doing and for picking hyper-parameters, and ideally we expect you to only submit the output
          of your final models to the test set. Hyper-parameters should not be tweaked on the test set. We can see the submission history and if we find too many submission to the test server in too short a time, we will penalize for it.
 
-4.  Lastly, be careful not to work of a public fork of this repo. Make a
+4.  Late submissions will not be eligible for extra-credits.
+
+5.  Lastly, be careful not to work of a public fork of this repo. Make a
     private clone to work on your assignment. You are responsible for
     preventing other students from copying your work. Please also see point 2
     above.
@@ -64,6 +66,8 @@ long-running jobs but it should be sufficient for the requirements of this assig
     the [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) dataset. This dataset consists of 60K 32 × 32 color images from
     10 classes. There are 50K training images and 10K validation images. The images in CIFAR-10 are of size
     3 × 32 × 32, i.e. three-channel RGB images of 32 × 32 pixels.
+
+    Please note that for the entirety of question 1 (including extra credits), you are not allowed to use any pretrained models / additional datasets other than the ones that we have provided you.
 
     <div align="center"> <img src="cifar10.png" width="50%"> </div>
 
@@ -157,15 +161,15 @@ long-running jobs but it should be sufficient for the requirements of this assig
        gradescope. If you want, you can also show your scores on the class
        leaderboard, and challenge your classmates to beat you!  
        
-       **We will give upto 5pts of extra credits to top performing entries on 
-       the leaderboard!**
+       **We will give upto 5pts of extra credits to top 5 performing entries on 
+       the leaderboard!  Note that late submissions will not be eligible for extra-credits.**
 
        **In your report, include:** Test set accuracy (category-wise and aggregate) 
        for your best model. You can get this from gradescope. A reasonable submission 
        with more than 67% accuracy will be given full credit for this part.
 
 
-2. **Semantic Segmentation [40 pts].** In this part, you will build your own sementic segmentation on a subset of the [COCO-Stuff ](https://github.com/nightrome/cocostuff). This task comprises of classifying image pixels into the following 6 categories: background, sports, accessory, animal, vehicle, person. We will use the mean average precision (on the soft output) and mean intersection over union (of the hard output) to measure performance. We provide code for computing these metrics. 
+2. **Semantic Segmentation [40 pts].** In this part, you will build your own sementic segmentation on a subset of the [COCO-Stuff ](https://github.com/nightrome/cocostuff). This task comprises of classifying image pixels into the following 6 categories: background, sports, accessory, animal, vehicle, person. We will use the mean average precision (on the soft output) and mean intersection over union (of the hard output) to measure performance. We provide code for computing these metrics. Please note that for the entirety of question 2 (including extra credits), you are not allowed to use any other pretrained models besides resnet18 pre-trained on the ImageNet dataset. you are also not allowed to use any additional datasets other than the ones that we have provided you.
 
     <div align="center">
     <img src="vis_valset_gt.png" width="80%">
@@ -245,7 +249,7 @@ long-running jobs but it should be sufficient for the requirements of this assig
    1. **Secret test set [30 pts].** 
        The starter code produces predictions on the test set, writing to the file `Q2_sseg_predictions.npy`.  Upload the file `Q2_sseg_predictions.npy` for your best model on gradescope to have it graded. If you want, you can also show your scores on the class leaderboard, and challenge your classmates to beat you!  
        
-       **We will give up to 4pts of extra credits to top-5 entries on the leaderboard!**
+       **We will give up to 4pts of extra credits to top-5 entries on the leaderboard!  Note that late submissions will not be eligible for extra-credits.**
 
        **In your report, include:** test set accuracy of your best model. 
        You can get this from gradescope. A reasonable submission with average IoU more
