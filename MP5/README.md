@@ -16,11 +16,11 @@
        - Code and output files should be submitted to [Gradescope](https://www.gradescope.com) under `MP5-code` with the following structure:
          ```
          # Q1 code
-         CS543_MP4_part1_starter_code.py
+         CS543_MP5_part1_starter_code.py
          # Q1 results
          Q1_label_predictions.npy (we provide code to generate these using your models, see below)
          # Q2 code
-         CS543_MP4_part2_starter_code.py
+         CS543_MP5_part2_starter_code.py
          # Q2 results 
          Q2_sseg_predictions.npy (we provide code to generate these using your models, see below)
          ```
