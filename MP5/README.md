@@ -2,7 +2,7 @@
 
 ### Instructions 
 
-1.  Assignment is due at **11:59:59 PM on Friday April 26 2024**.
+1.  Assignment is due at **11:59:59 PM on Friday May 3 2024**.
 
 2.  See [policies](http://saurabhg.web.illinois.edu/teaching/ece549/sp2024/policies.html)
     on [class website](http://saurabhg.web.illinois.edu/teaching/ece549/sp2024/).
