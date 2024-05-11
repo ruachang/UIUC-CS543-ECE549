@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>contour_solution_template.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="contour-detection">Contour Detection</h2>
+<h4 id="chang-liuchangl25">Chang Liu(changl25)</h4>
+<ol>
+<li>
+<p><strong>Method Description.</strong></p>
+<p>I use Canny edge detector to detect the contour in image. The Canny detector mainly depends on the gradient change across the edge. For step edges or ramp edges, the gradient magnitude significantly differs from zero while areas lacking distinct edges exhibit a gradient magnitude close to zero. Thus, contour detection involves analyzing the gradient magnitude across the image. The Canny edge detector encompasses the following steps:</p>
+<ul>
+<li>Using Gaussian to  mitigates the adverse effects of noise.</li>
+<li>computing the initial edge map by determining the magnitude and orientation of gradient.</li>
+<li>Applying non-maximum suppression to eliminate weak edges by only retaining local maxima in the gradient direction.</li>
+<li>Thresholding to eliminate weak edges.</li>
+</ul>
+</li>
+<li>
+<p><strong>Precision Recall Plot.</strong></p>
+<p>The plot of precision and score of every step is shown as</p>
+</li>
+</ol>
+<div align="center">
+      <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/plot.png" width="70%" style="margin:10px;">
+</div>
+<ol start="3">
+<li>
+<p><strong>Results Table.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>overall max F-score</th>
+<th>average max F-score</th>
+<th>AP</th>
+<th>Runtime (seconds)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial implementation</td>
+<td>0.450</td>
+<td>0.516</td>
+<td>0.385</td>
+<td>0.010</td>
+</tr>
+<tr>
+<td>Warm-up [remove boundary artifacts]</td>
+<td>0.519719</td>
+<td>0.572607</td>
+<td>0.503179</td>
+<td>0.012979</td>
+</tr>
+<tr>
+<td>Smoothing</td>
+<td>0.575750</td>
+<td>0.616917</td>
+<td>0.568219</td>
+<td>0.012630</td>
+</tr>
+<tr>
+<td>Non-maximum Suppression</td>
+<td>0.571558</td>
+<td>0.614170</td>
+<td>0.570659</td>
+<td>0.143551</td>
+</tr>
+<tr>
+<td>Val set numbers of best model [From gradescope]</td>
+<td>0.577</td>
+<td>0.616</td>
+<td>0.583</td>
+<td>0.35</td>
+</tr>
+</tbody>
+</table>
+<p>(The best result from gradescope seems different from the one running locally. That is the reason why the score on gradescope is different from the result on the plot)</p>
+</li>
+<li>
+<p><strong>Visualizations.</strong></p>
+<p>The following four images are the visualized images, which visualize the transformation at each significant step. They are the original image, warm-up image, the edge detected with Gaussian and Differential Filters, the edge that is been processed by non-maximum suppression and threshold.</p>
+<div align="center">
+   <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/data/val_mini/images/3096.jpg" width="70%" style="margin:10px;">
+   <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/output/demo/warm_up/bench/3096.png" width="70%" style="margin:10px;">
+   <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/output/demo/gaussian_2d/bench/3096.png" width="70%" style="margin:10px;">
+   <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/output/demo/thresh/bench/3096.png" width="70%" style="margin:10px;">
+</div>
+</li>
+</ol>
+<p>From these images, we can find that</p>
+<ul>
+<li>Deal with the edge: The method used to handle image edges significantly influences the outcome of edge detection. When we set the mode to be <strong>symmtric</strong>, the pixel near the edge will be copied to solve the problem of the artifects.</li>
+<li>Effects of Combining Gaussian and Differential Filters: The sequential application of a Gaussian filter, followed by a differential filter, smooths the image, and reduces noise, resulting in a cleaner background. But the edge also become much wider than before.</li>
+<li>Influence of non-maximum suppression(nms): with nms, weaker, redundant edge pixels are effectively eliminated, thus the edges becomer sharper and most of them are single-pixel.</li>
+<li>Limitations: not all of the artifects are eradicated. Some incomplete or discontinuous edges and occasional double edges persist.</li>
+</ul>
+<ol start="5">
+<li>
+<p><strong>Bells and Whistles.</strong></p>
+<p>To improve the performance of the detectors, I have tried several methods. Some of them make the score to be higher, while some of them seems to produce better image visually, but the F-score and AP drops.</p>
+<p>The methods I try include</p>
+<ul>
+<li>Using different differential filter: beside the simple gradient by rows and colomns, I apply sobel as the differential filter and try to use different size of the sobel. After experiment, I found that the sobel with the size 5 works better for the given dataset.</li>
+<li>Using multiple scale of image and combining the detected edges together:</li>
+<li>I also try to connect the broken edges with the neighbour of 8-connections. By using two threshold, the pixel that is between the high threshold and low threshold is conneced or filterd depending on its neighbours. Comparing its value with the 8-connections neighbours and they will be set to high value if they near a high threshold pixel. The result actually looks better but the point doesn't increase.</li>
+</ul>
+<div align="center">
+   <img src="file:///mnt/d/MP/cv-sp24-mps/MP3/contours/output/demo/extra/bench/3096.png" width="70%" style="margin:10px;">
+</div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>overall max F-score</th>
+<th>average max F-score</th>
+<th>AP</th>
+<th>Runtime (seconds)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Best base Implementation</td>
+<td>0.570</td>
+<td>0.608</td>
+<td>0.568</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>larger sobel(best))</td>
+<td>0.577</td>
+<td>0.616</td>
+<td>0.583</td>
+<td>0.35</td>
+</tr>
+<tr>
+<td>Double threshold</td>
+<td>0.577</td>
+<td>0.616</td>
+<td>0.583</td>
+<td>0.35</td>
+</tr>
+<tr>
+<td>resize and multi-scale</td>
+<td>0.586</td>
+<td>0.617</td>
+<td>0.570</td>
+<td>0.26</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+
+</body>
+</html>

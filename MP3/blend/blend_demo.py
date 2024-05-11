@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from absl import app, flags
 
-from blend_solve import blend
+from blend_sol1 import blend
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('im1', 'apple.jpeg', 'image 1')

@@ -15,12 +15,13 @@ import time
 from absl import flags, app
 from contour_plot import display_results
 from contour_solve import compute_edges_dxdy
+import argparse
 
 ### You may change imset to val_mini for faster evaluation and development
 ### Note that all numbers you reported should be on val set
-FLAGS = flags.FLAGS
-flags.DEFINE_string('output_dir', 'output/demo', 'directory to save results.')
-flags.DEFINE_string('imset', 'val', 'val set to use for testing')
+# FLAGS = flags.FLAGS
+# flags.DEFINE_string('output_dir', 'output/demo', 'directory to save results.')
+# flags.DEFINE_string('imset', 'val', 'val set to use for testing')
 
 ### Please keep N_THRESHOLDS = 19 to keep the evaluation fast and reproducible
 N_THRESHOLDS = 19
@@ -29,10 +30,10 @@ def get_imlist(imset):
   imlist = np.loadtxt(f'data/{imset}/imlist')
   return imlist.astype(np.int64)
 
-def detect_edges(imlist, fn, out_dir):
+def detect_edges(imlist, fn, imset, out_dir):
   total_time = 0
   for imname in tqdm(imlist):
-    I = cv2.imread(os.path.join('data', FLAGS.imset, 'images', str(imname)+'.jpg'))
+    I = cv2.imread(os.path.join('data', imset, 'images', str(imname)+'.jpg'))
     start_time = time.time()
     mag = fn(I)
     total_time += time.time() - start_time
@@ -40,8 +41,8 @@ def detect_edges(imlist, fn, out_dir):
     cv2.imwrite(out_file_name, mag)
   return total_time / len(imlist)
 
-def load_gt_boundaries(imname):
-    gt_path = os.path.join('data', FLAGS.imset, 'groundTruth', '{}.mat'.format(imname))
+def load_gt_boundaries(imname, imset):
+    gt_path = os.path.join('data', imset, 'groundTruth', '{}.mat'.format(imname))
     return BSDSDataset.load_boundaries(gt_path)
 
 def load_pred(output_dir, imname):
@@ -62,37 +63,42 @@ def save_results(out_file_name, threshold_results, overall_result, runtime):
            threshold=threshold)
   return threshold, precision, recall, f1, best_f1, area_pr
 
-def main(_):
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-o", "--output_dir", type=str, default="/mnt/d/MP/cv-sp24-mps/MP3/contours/output/demo/mini")
+  parser.add_argument("-i", "--imlist", type=str, default="val_mini")
+  args = parser.parse_args()
+  output_dir = args.output_dir
+  imset = args.imlist
   start_eval = time.time()
 
   fn = compute_edges_dxdy
-  imlist = get_imlist(FLAGS.imset)
+  imlist = get_imlist(imset)
   
-  output_dir = FLAGS.output_dir
   if not os.path.exists(output_dir):
     os.makedirs(output_dir)
   
-  bench_dir = os.path.join(FLAGS.output_dir, 'bench')
+  bench_dir = os.path.join(output_dir, 'bench')
   if not os.path.exists(bench_dir):
     os.makedirs(bench_dir)
 
   print('Running detector:')
-  runtime = detect_edges(imlist, fn, bench_dir)
+  runtime = detect_edges(imlist, fn, imset, bench_dir)
 
   print('Evaluating:')
   sample_results, threshold_results, overall_result = \
     evaluate_boundaries.pr_evaluation(N_THRESHOLDS, imlist, 
-                                      load_gt_boundaries, 
+                                      lambda x: load_gt_boundaries(x, imset), 
                                       lambda x: load_pred(bench_dir, x),
                                       fast=False, progress=tqdm)
   print('Save results:')
-  out_file_name = os.path.join(FLAGS.output_dir, 'metrics.npz')
+  out_file_name = os.path.join(output_dir, 'metrics.npz')
   threshold, precision, recall, f1, best_f1, area_pr = \
     save_results(out_file_name, threshold_results, overall_result, runtime)
   
   fig = plt.figure(figsize=(6,6))
   ax = fig.gca()
-  display_results(ax, FLAGS.output_dir, threshold, precision, recall, f1, best_f1, area_pr)
+  display_results(ax, output_dir, threshold, precision, recall, f1, best_f1, area_pr)
   end_eval = time.time()
   print('{:>24s}: {:<10.6f}'.format('runtime (in seconds)', runtime))
   print('{:>24s}: {:<10.6f}'.format('eval time (in seconds)', end_eval-start_eval))
@@ -100,4 +106,4 @@ def main(_):
   fig.savefig(os.path.join(output_dir + '_pr.pdf'), bbox_inches='tight')
   
 if __name__ == '__main__':
-  app.run(main)
+  main()
